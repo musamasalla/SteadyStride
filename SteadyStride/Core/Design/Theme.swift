@@ -33,6 +33,17 @@ struct Theme {
         static let full: CGFloat = 9999
     }
     
+    // Alias for convenience
+    typealias CornerRadius = Radius
+    
+    // Convenience accessors
+    struct CornerRadiusValues {
+        static let small: CGFloat = Radius.sm
+        static let medium: CGFloat = Radius.md
+        static let large: CGFloat = Radius.lg
+        static let full: CGFloat = Radius.full
+    }
+    
     // MARK: - Shadows
     struct Shadow {
         static let sm = ShadowStyle(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
