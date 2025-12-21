@@ -1,0 +1,81 @@
+{
+  "identifier" : "D7AB5B96-8B45-4F77-9E5F-BE2C9A6E1234",
+  "type" : "local",
+  "version" : 3,
+  "products" : [
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : true,
+      "internalID" : "STEADY001",
+      "isAutoRenewable" : false,
+      "localizations" : [
+        {
+          "description" : "Unlock all exercises, routines, and features forever. One-time purchase with lifetime access.",
+          "displayName" : "Full Access",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.steadystride.fullaccess",
+      "referenceName" : "Full Access",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : true,
+      "internalID" : "STEADY002",
+      "autoRenewingSubscriptionProductIdentifier" : "com.steadystride.premium.monthly",
+      "localizations" : [
+        {
+          "description" : "Premium coaching with AI personalization, unlimited family sharing, and doctor reports. Billed monthly.",
+          "displayName" : "Premium Monthly",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.steadystride.premium.monthly",
+      "referenceName" : "Premium Monthly",
+      "subscriptionGroupID" : "STEADY_PREMIUM",
+      "type" : "AutoRenewableSubscription",
+      "subscriptionPeriod" : "P1M"
+    },
+    {
+      "displayPrice" : "24.99",
+      "familyShareable" : true,
+      "internalID" : "STEADY003",
+      "autoRenewingSubscriptionProductIdentifier" : "com.steadystride.premium.yearly",
+      "localizations" : [
+        {
+          "description" : "Premium coaching with AI personalization, unlimited family sharing, and doctor reports. Save 30% with annual billing.",
+          "displayName" : "Premium Yearly",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.steadystride.premium.yearly",
+      "referenceName" : "Premium Yearly",
+      "subscriptionGroupID" : "STEADY_PREMIUM", 
+      "type" : "AutoRenewableSubscription",
+      "subscriptionPeriod" : "P1Y"
+    }
+  ],
+  "subscriptionGroups" : [
+    {
+      "id" : "STEADY_PREMIUM",
+      "localizations" : [
+        {
+          "description" : "Premium coaching subscription for SteadyStride",
+          "displayName" : "SteadyStride Premium",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "SteadyStride Premium",
+      "subscriptions" : [
+        "com.steadystride.premium.monthly",
+        "com.steadystride.premium.yearly"
+      ]
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "STEADY_APP_001",
+    "_developerTeamID" : "9Q4TV94VR7",
+    "_lastSynchronizedDate" : 757375170.95568502
+  }
+}

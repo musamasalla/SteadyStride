@@ -8,6 +8,7 @@
 import Foundation
 import WatchConnectivity
 import Combine
+import os
 
 /// Service for managing Apple Watch connectivity
 /// Handles real-time data sync between iPhone and Watch
@@ -16,6 +17,9 @@ class WatchConnectivityService: NSObject, ObservableObject {
     
     // MARK: - Singleton
     static let shared = WatchConnectivityService()
+    
+    // MARK: - Logger
+    private let logger = Logger(subsystem: "com.steadystride.app", category: "WatchConnectivity")
     
     // MARK: - Published Properties
     @Published var isWatchPaired: Bool = false
@@ -63,7 +67,7 @@ class WatchConnectivityService: NSObject, ObservableObject {
     /// Send a message to the Watch
     func sendMessage(_ type: MessageType, data: [String: Any] = [:], replyHandler: (([String: Any]) -> Void)? = nil) {
         guard let session = session, session.isReachable else {
-            print("Watch is not reachable")
+            logger.warning("Watch is not reachable")
             return
         }
         
@@ -71,8 +75,8 @@ class WatchConnectivityService: NSObject, ObservableObject {
         message["type"] = type.rawValue
         message["timestamp"] = Date().timeIntervalSince1970
         
-        session.sendMessage(message, replyHandler: replyHandler) { error in
-            print("Error sending message to Watch: \(error.localizedDescription)")
+        session.sendMessage(message, replyHandler: replyHandler) { [weak self] error in
+            self?.logger.error("Error sending message to Watch: \(error.localizedDescription)")
         }
     }
     
@@ -89,7 +93,7 @@ class WatchConnectivityService: NSObject, ObservableObject {
         do {
             try session.updateApplicationContext(context)
         } catch {
-            print("Error updating application context: \(error.localizedDescription)")
+            logger.error("Error updating application context: \(error.localizedDescription)")
         }
     }
     
@@ -184,7 +188,7 @@ extension WatchConnectivityService: WCSessionDelegate {
             }
             
             if let error = error {
-                print("WCSession activation failed: \(error.localizedDescription)")
+                logger.error("WCSession activation failed: \(error.localizedDescription)")
             }
         }
     }

@@ -8,6 +8,9 @@
 import Foundation
 import UserNotifications
 import Combine
+import os
+
+private let logger = Logger(subsystem: "com.steadystride.app", category: "Notifications")
 
 /// Service for managing local and push notifications
 @MainActor
@@ -34,7 +37,7 @@ class NotificationService: ObservableObject {
             isAuthorized = granted
             return granted
         } catch {
-            print("Notification authorization error: \(error)")
+            logger.error("Notification authorization error: \(error.localizedDescription)")
             return false
         }
     }

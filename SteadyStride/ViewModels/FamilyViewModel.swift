@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import os
 
 @MainActor
 @Observable
@@ -15,6 +16,9 @@ class FamilyViewModel {
     
     // MARK: - State
     var isLoading: Bool = false
+    
+    // MARK: - Logger
+    private let logger = Logger(subsystem: "com.steadystride.app", category: "FamilyViewModel")
     var showingInviteSheet: Bool = false
     var showingMemberDetail: Bool = false
     var selectedMember: FamilyMember?
@@ -73,7 +77,7 @@ class FamilyViewModel {
             resetInviteForm()
             showingInviteSheet = false
         } catch {
-            print("Failed to send invite: \(error)")
+            logger.error("Failed to send invite: \(error.localizedDescription)")
         }
         
         isLoading = false

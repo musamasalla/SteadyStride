@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 import Combine
+import os
 
 /// Voice coaching service using AVSpeechSynthesizer
 /// Provides voice guidance during exercises with configurable speed and voice
@@ -16,6 +17,9 @@ class VoiceCoachService: NSObject, ObservableObject {
     
     // MARK: - Singleton
     static let shared = VoiceCoachService()
+    
+    // MARK: - Logger
+    private let logger = Logger(subsystem: "com.steadystride.app", category: "VoiceCoach")
     
     // MARK: - Published Properties
     @Published var isSpeaking: Bool = false
@@ -51,7 +55,7 @@ class VoiceCoachService: NSObject, ObservableObject {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers, .allowBluetooth])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            print("Failed to setup audio session: \(error)")
+            logger.error("Failed to setup audio session: \(error.localizedDescription)")
         }
     }
     

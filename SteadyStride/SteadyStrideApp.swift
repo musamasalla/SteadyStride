@@ -7,6 +7,9 @@
 
 import SwiftUI
 import SwiftData
+import os
+
+private let logger = Logger(subsystem: "com.steadystride.app", category: "App")
 
 @main
 struct SteadyStrideApp: App {
@@ -25,13 +28,25 @@ struct SteadyStrideApp: App {
         
         let modelConfiguration = ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: false
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .private("iCloud.com.steadystride.app")
         )
         
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Log the error for debugging
+            logger.error("Failed to create ModelContainer: \(error.localizedDescription)")
+            
+            // Fall back to in-memory storage so app doesn't crash
+            logger.warning("Falling back to in-memory storage")
+            let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            do {
+                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+            } catch {
+                // This should never happen with in-memory storage
+                fatalError("Could not create fallback ModelContainer: \(error)")
+            }
         }
     }()
     

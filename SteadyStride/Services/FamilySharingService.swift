@@ -8,12 +8,16 @@
 import Foundation
 import CloudKit
 import Combine
+import os
 
 /// Service for managing family sharing features
 @MainActor
 class FamilySharingService: ObservableObject {
     
     static let shared = FamilySharingService()
+    
+    // MARK: - Logger
+    private let logger = Logger(subsystem: "com.steadystride.app", category: "FamilySharing")
     
     @Published var familyMembers: [FamilyMember] = []
     @Published var pendingInvites: [FamilyMember] = []
@@ -138,7 +142,6 @@ class FamilySharingService: ObservableObject {
         
         // In production, send push notification
         activityFeed.insert(activity, at: 0)
-        _ = encouragement // Used for sending to the member
     }
     
     // MARK: - Check-In
@@ -174,7 +177,7 @@ class FamilySharingService: ObservableObject {
         // In production, this would send push notifications via CloudKit or APNs
         for member in familyMembers where member.notifyOnWorkoutComplete {
             // Send notification based on activity type and member preferences
-            print("Notifying \(member.name) about: \(activity.message ?? activity.type.rawValue)")
+            logger.info("Notifying \(member.name) about: \(activity.message ?? activity.type.rawValue)")
         }
     }
     

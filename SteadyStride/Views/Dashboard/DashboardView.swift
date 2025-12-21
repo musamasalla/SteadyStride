@@ -42,8 +42,8 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        // Settings
+                    NavigationLink {
+                        SettingsView()
                     } label: {
                         Image(systemName: "gearshape.fill")
                             .foregroundColor(.steadyTextSecondary)

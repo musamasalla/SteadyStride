@@ -8,6 +8,9 @@
 import Foundation
 import HealthKit
 import Combine
+import os
+
+private let logger = Logger(subsystem: "com.steadystride.app", category: "HealthKit")
 
 /// Service for managing HealthKit integration
 /// Handles reading health data and writing workout sessions
@@ -142,7 +145,7 @@ class HealthKitService: ObservableObject {
                 self.todaySteps = Int(steps)
             }
         } catch {
-            print("Error fetching steps: \(error)")
+            logger.error("Error fetching steps: \(error.localizedDescription)")
         }
     }
     
@@ -160,7 +163,7 @@ class HealthKitService: ObservableObject {
                 self.todayActiveMinutes = Int(minutes)
             }
         } catch {
-            print("Error fetching active minutes: \(error)")
+            logger.error("Error fetching active minutes: \(error.localizedDescription)")
         }
     }
     
@@ -194,7 +197,7 @@ class HealthKitService: ObservableObject {
                 }
             }
         } catch {
-            print("Error fetching heart rate: \(error)")
+            logger.error("Error fetching heart rate: \(error.localizedDescription)")
         }
     }
     
@@ -217,7 +220,7 @@ class HealthKitService: ObservableObject {
                 let steps = try await fetchSum(for: stepType, predicate: predicate, unit: .count())
                 weeklySteps[startOfDay] = Int(steps)
             } catch {
-                print("Error fetching steps for \(date): \(error)")
+                logger.warning("Error fetching steps for \(date): \(error.localizedDescription)")
             }
         }
         
@@ -284,7 +287,7 @@ class HealthKitService: ObservableObject {
                 return sample.quantity.doubleValue(for: .percent()) * 100
             }
         } catch {
-            print("Error fetching walking steadiness: \(error)")
+            logger.error("Error fetching walking steadiness: \(error.localizedDescription)")
         }
         
         return nil
