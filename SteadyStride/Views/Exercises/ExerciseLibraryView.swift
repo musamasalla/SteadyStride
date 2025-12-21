@@ -14,7 +14,7 @@ struct ExerciseLibraryView: View {
     @State private var selectedExercise: Exercise?
     
     private var exercises: [Exercise] {
-        Exercise.sampleExercises
+        ExerciseDataService.shared.allExercises
     }
     
     private var filteredExercises: [Exercise] {
@@ -216,7 +216,7 @@ struct ExerciseDetailView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // Toggle favorite
+                        exercise.isFavorite.toggle()
                     } label: {
                         Image(systemName: exercise.isFavorite ? "heart.fill" : "heart")
                             .foregroundColor(exercise.isFavorite ? .steadyError : .steadyTextSecondary)

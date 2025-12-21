@@ -84,8 +84,4 @@ class DashboardViewModel {
         recentSessions = allSessions.filter { $0.status == .completed }
     }
     
-    // MARK: - Quick Actions
-    func startQuickWorkout() {
-        // Will be implemented to start the recommended workout
-    }
 }

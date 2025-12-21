@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RoutineDetailView: View {
     let routine: Routine
+    @Environment(\.modelContext) private var modelContext
     @State private var showingWorkout = false
+    @State private var exercises: [Exercise] = []
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -34,6 +37,27 @@ struct RoutineDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .fullScreenCover(isPresented: $showingWorkout) {
             WorkoutSessionView(routine: routine)
+        }
+        .task {
+            loadExercises()
+        }
+    }
+    
+    // MARK: - Load Exercises
+    private func loadExercises() {
+        if !routine.exerciseIDs.isEmpty {
+            let descriptor = FetchDescriptor<Exercise>()
+            let allExercises = (try? modelContext.fetch(descriptor)) ?? []
+            
+            // Filter and order by routine's exerciseIDs
+            exercises = routine.exerciseIDs.compactMap { id in
+                allExercises.first { $0.id == id }
+            }
+        }
+        
+        // Fallback to sample exercises if none loaded
+        if exercises.isEmpty {
+            exercises = Array(Exercise.sampleExercises.prefix(min(5, max(1, routine.exerciseIDs.count))))
         }
     }
     
@@ -78,7 +102,7 @@ struct RoutineDetailView: View {
     private var quickStats: some View {
         HStack(spacing: Theme.Spacing.md) {
             StatItem(
-                value: "\(routine.exerciseIDs.count)",
+                value: "\(exercises.count)",
                 label: "Exercises",
                 icon: "figure.walk"
             )
@@ -104,9 +128,16 @@ struct RoutineDetailView: View {
                 .font(Typography.headlineSmall)
                 .foregroundColor(.steadyTextPrimary)
             
-            // Show sample exercises since we're using IDs
-            ForEach(Array(sampleExercises.enumerated()), id: \.offset) { index, exercise in
-                ExerciseListItem(exercise: exercise, index: index + 1)
+            if exercises.isEmpty {
+                ContentUnavailableView(
+                    "Loading Exercises",
+                    systemImage: "figure.walk",
+                    description: Text("Exercise list is being prepared")
+                )
+            } else {
+                ForEach(Array(exercises.enumerated()), id: \.offset) { index, exercise in
+                    ExerciseListItem(exercise: exercise, index: index + 1)
+                }
             }
         }
     }
@@ -120,11 +151,6 @@ struct RoutineDetailView: View {
         }
         .buttonStyle(.primary)
         .padding(.vertical, Theme.Spacing.lg)
-    }
-    
-    // Sample exercises for display
-    private var sampleExercises: [Exercise] {
-        Array(Exercise.sampleExercises.prefix(min(5, routine.exerciseIDs.count.nonZeroValue)))
     }
 }
 

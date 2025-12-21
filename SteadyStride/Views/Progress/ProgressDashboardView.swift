@@ -1,5 +1,5 @@
 //
-//  ProgressView.swift
+//  ProgressDashboardView.swift
 //  SteadyStride
 //
 //  Created for SteadyStride - Senior Mobility Coach
@@ -10,7 +10,8 @@ import SwiftData
 import Charts
 
 struct ProgressDashboardView: View {
-    @State private var selectedTimeRange: TimeRange = .week
+    @Environment(\.modelContext) private var modelContext
+    @State private var viewModel = ProgressViewModel()
     @State private var showingAchievements = false
     
     var body: some View {
@@ -51,7 +52,15 @@ struct ProgressDashboardView: View {
                 }
             }
             .sheet(isPresented: $showingAchievements) {
-                AchievementsView()
+                AchievementsView(earnedAchievements: viewModel.earnedAchievements)
+            }
+            .task {
+                viewModel.loadProgressData(modelContext: modelContext)
+                viewModel.updateFallRiskAssessment()
+            }
+            .refreshable {
+                viewModel.loadProgressData(modelContext: modelContext)
+                viewModel.updateFallRiskAssessment()
             }
         }
     }
@@ -61,7 +70,7 @@ struct ProgressDashboardView: View {
         HStack(spacing: Theme.Spacing.md) {
             ProgressStatCard(
                 title: "This Week",
-                value: "5",
+                value: "\(weeklyWorkoutCount)",
                 subtitle: "workouts",
                 icon: "figure.walk",
                 color: .steadyPrimary
@@ -69,7 +78,7 @@ struct ProgressDashboardView: View {
             
             ProgressStatCard(
                 title: "Total Time",
-                value: "45",
+                value: "\(weeklyMinutes)",
                 subtitle: "minutes",
                 icon: "clock.fill",
                 color: .steadySecondary
@@ -77,10 +86,18 @@ struct ProgressDashboardView: View {
         }
     }
     
+    private var weeklyWorkoutCount: Int {
+        viewModel.weeklyData.reduce(0) { $0 + $1.workoutCount }
+    }
+    
+    private var weeklyMinutes: Int {
+        viewModel.weeklyData.reduce(0) { $0 + $1.minutes }
+    }
+    
     // MARK: - Time Range Picker
     private var timeRangePicker: some View {
-        Picker("Time Range", selection: $selectedTimeRange) {
-            ForEach(TimeRange.allCases, id: \.self) { range in
+        Picker("Time Range", selection: $viewModel.selectedTimeRange) {
+            ForEach(ProgressTimeRange.allCases, id: \.self) { range in
                 Text(range.rawValue).tag(range)
             }
         }
@@ -94,24 +111,33 @@ struct ProgressDashboardView: View {
                 .font(Typography.headlineSmall)
                 .foregroundColor(.steadyTextPrimary)
             
-            Chart {
-                ForEach(sampleChartData, id: \.day) { data in
-                    BarMark(
-                        x: .value("Day", data.day),
-                        y: .value("Minutes", data.minutes)
-                    )
-                    .foregroundStyle(Color.steadyGradient)
-                    .cornerRadius(4)
+            if viewModel.weeklyData.isEmpty {
+                ContentUnavailableView(
+                    "No Data Yet",
+                    systemImage: "chart.bar",
+                    description: Text("Complete your first workout to see activity data")
+                )
+                .frame(height: 200)
+            } else {
+                Chart {
+                    ForEach(viewModel.weeklyData) { data in
+                        BarMark(
+                            x: .value("Day", data.day),
+                            y: .value("Minutes", data.minutes)
+                        )
+                        .foregroundStyle(Color.steadyGradient)
+                        .cornerRadius(4)
+                    }
                 }
-            }
-            .frame(height: 200)
-            .chartXAxis {
-                AxisMarks(values: .automatic) { _ in
-                    AxisValueLabel()
+                .frame(height: 200)
+                .chartXAxis {
+                    AxisMarks(values: .automatic) { _ in
+                        AxisValueLabel()
+                    }
                 }
-            }
-            .chartYAxis {
-                AxisMarks(position: .leading)
+                .chartYAxis {
+                    AxisMarks(position: .leading)
+                }
             }
         }
         .cardStyle()
@@ -125,7 +151,7 @@ struct ProgressDashboardView: View {
                     .font(.system(size: 40))
                     .foregroundColor(.steadySecondary)
                 
-                Text("7")
+                Text("\(viewModel.currentStreak)")
                     .font(Typography.displayMedium)
                     .foregroundColor(.steadyTextPrimary)
                 
@@ -143,7 +169,7 @@ struct ProgressDashboardView: View {
                     .font(.system(size: 40))
                     .foregroundColor(.steadyWarning)
                 
-                Text("14")
+                Text("\(viewModel.bestStreak)")
                     .font(Typography.displayMedium)
                     .foregroundColor(.steadyTextPrimary)
                 
@@ -175,10 +201,12 @@ struct ProgressDashboardView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.md) {
-                    AchievementBadge(type: .firstWorkout, isEarned: true)
-                    AchievementBadge(type: .streak3Days, isEarned: true)
-                    AchievementBadge(type: .streak7Days, isEarned: true)
-                    AchievementBadge(type: .exercises10, isEarned: false)
+                    ForEach(AchievementType.allCases.prefix(4), id: \.self) { type in
+                        AchievementBadge(
+                            type: type,
+                            isEarned: viewModel.earnedAchievements.contains(type)
+                        )
+                    }
                 }
             }
         }
@@ -198,22 +226,22 @@ struct ProgressDashboardView: View {
                         .frame(width: 80, height: 80)
                     
                     Circle()
-                        .trim(from: 0, to: 0.75)
-                        .stroke(Color.steadySuccess, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .trim(from: 0, to: Double(viewModel.fallRiskScore) / 100.0)
+                        .stroke(viewModel.fallRiskLevel.color, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                         .frame(width: 80, height: 80)
                         .rotationEffect(.degrees(-90))
                     
-                    Text("75")
+                    Text("\(viewModel.fallRiskScore)")
                         .font(Typography.headlineLarge)
-                        .foregroundColor(.steadySuccess)
+                        .foregroundColor(viewModel.fallRiskLevel.color)
                 }
                 
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text("Low Risk")
+                    Text(viewModel.fallRiskLevel.rawValue)
                         .font(Typography.labelLarge)
-                        .foregroundColor(.steadySuccess)
+                        .foregroundColor(viewModel.fallRiskLevel.color)
                     
-                    Text("Your balance and mobility scores indicate a low fall risk. Keep up the great work!")
+                    Text(viewModel.fallRiskLevel.description)
                         .font(Typography.bodySmall)
                         .foregroundColor(.steadyTextSecondary)
                 }
@@ -221,30 +249,6 @@ struct ProgressDashboardView: View {
         }
         .cardStyle()
     }
-    
-    // Sample data
-    private var sampleChartData: [ChartData] {
-        [
-            ChartData(day: "Mon", minutes: 15),
-            ChartData(day: "Tue", minutes: 10),
-            ChartData(day: "Wed", minutes: 20),
-            ChartData(day: "Thu", minutes: 0),
-            ChartData(day: "Fri", minutes: 12),
-            ChartData(day: "Sat", minutes: 18),
-            ChartData(day: "Sun", minutes: 8)
-        ]
-    }
-}
-
-struct ChartData {
-    let day: String
-    let minutes: Int
-}
-
-enum TimeRange: String, CaseIterable {
-    case week = "Week"
-    case month = "Month"
-    case year = "Year"
 }
 
 // MARK: - Progress Stat Card
@@ -310,13 +314,14 @@ struct AchievementBadge: View {
 // MARK: - Achievements View
 struct AchievementsView: View {
     @Environment(\.dismiss) private var dismiss
+    let earnedAchievements: [AchievementType]
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: Theme.Spacing.lg) {
                     ForEach(AchievementType.allCases, id: \.self) { type in
-                        AchievementBadge(type: type, isEarned: [.firstWorkout, .streak3Days, .streak7Days].contains(type))
+                        AchievementBadge(type: type, isEarned: earnedAchievements.contains(type))
                     }
                 }
                 .padding(Theme.Spacing.lg)

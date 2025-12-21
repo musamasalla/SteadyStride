@@ -12,6 +12,7 @@ struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = DashboardViewModel()
     @State private var showingWorkout: Bool = false
+    @State private var showingActivityHistory: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -59,6 +60,11 @@ struct DashboardView: View {
             .fullScreenCover(isPresented: $showingWorkout) {
                 if let routine = viewModel.todayWorkout {
                     WorkoutSessionView(routine: routine)
+                }
+            }
+            .sheet(isPresented: $showingActivityHistory) {
+                NavigationStack {
+                    ActivityHistoryView()
                 }
             }
         }
@@ -179,29 +185,49 @@ struct DashboardView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.md) {
-                    QuickActionCard(
-                        title: "Balance",
-                        icon: "figure.stand",
-                        color: .steadyPrimary
-                    )
+                    NavigationLink {
+                        RoutinesView(initialCategory: .balance)
+                    } label: {
+                        QuickActionCard(
+                            title: "Balance",
+                            icon: "figure.stand",
+                            color: .steadyPrimary
+                        )
+                    }
+                    .buttonStyle(.plain)
                     
-                    QuickActionCard(
-                        title: "Strength",
-                        icon: "dumbbell.fill",
-                        color: .steadySecondary
-                    )
+                    NavigationLink {
+                        RoutinesView(initialCategory: .strength)
+                    } label: {
+                        QuickActionCard(
+                            title: "Strength",
+                            icon: "dumbbell.fill",
+                            color: .steadySecondary
+                        )
+                    }
+                    .buttonStyle(.plain)
                     
-                    QuickActionCard(
-                        title: "Flexibility",
-                        icon: "figure.flexibility",
-                        color: .steadySuccess
-                    )
+                    NavigationLink {
+                        RoutinesView(initialCategory: .flexibility)
+                    } label: {
+                        QuickActionCard(
+                            title: "Flexibility",
+                            icon: "figure.flexibility",
+                            color: .steadySuccess
+                        )
+                    }
+                    .buttonStyle(.plain)
                     
-                    QuickActionCard(
-                        title: "Breathing",
-                        icon: "wind",
-                        color: .steadyInfo
-                    )
+                    NavigationLink {
+                        RoutinesView(initialCategory: .breathing)
+                    } label: {
+                        QuickActionCard(
+                            title: "Breathing",
+                            icon: "wind",
+                            color: .steadyInfo
+                        )
+                    }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -217,7 +243,9 @@ struct DashboardView: View {
                 
                 Spacer()
                 
-                Button("See All") {}
+                Button("See All") {
+                    showingActivityHistory = true
+                }
                     .font(Typography.labelMedium)
                     .foregroundColor(.steadyPrimary)
             }
