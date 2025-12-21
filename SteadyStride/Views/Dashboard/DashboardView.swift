@@ -51,10 +51,10 @@ struct DashboardView: View {
                 }
             }
             .refreshable {
-                await viewModel.loadDashboardData()
+                await viewModel.loadDashboardData(modelContext: modelContext)
             }
             .task {
-                await viewModel.loadDashboardData()
+                await viewModel.loadDashboardData(modelContext: modelContext)
             }
             .fullScreenCover(isPresented: $showingWorkout) {
                 if let routine = viewModel.todayWorkout {

@@ -50,7 +50,7 @@ class DashboardViewModel {
     }
     
     // MARK: - Load Data
-    func loadDashboardData() async {
+    func loadDashboardData(modelContext: ModelContext) async {
         isLoading = true
         
         // Load health data
@@ -59,8 +59,19 @@ class DashboardViewModel {
         todayActiveMinutes = HealthKitService.shared.todayActiveMinutes
         currentHeartRate = HealthKitService.shared.latestHeartRate
         
-        // Load recommended workout
-        todayWorkout = Routine.sampleRoutines.first { $0.isRecommended }
+        // Load recommended workout from database
+        let descriptor = FetchDescriptor<Routine>(
+            predicate: #Predicate { $0.isRecommended },
+            sortBy: [SortDescriptor(\.name)]
+        )
+        let routines = (try? modelContext.fetch(descriptor)) ?? []
+        
+        // Use database routine or fall back to sample for initial experience
+        if let dbRoutine = routines.first {
+            todayWorkout = dbRoutine
+        } else {
+            todayWorkout = Routine.sampleRoutines.first { $0.isRecommended }
+        }
         
         isLoading = false
     }

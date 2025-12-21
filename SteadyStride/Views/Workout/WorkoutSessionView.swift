@@ -81,7 +81,7 @@ struct WorkoutSessionView: View {
                 
                 HStack(spacing: Theme.Spacing.xl) {
                     Label("\(Int(routine.estimatedDuration)) min", systemImage: "clock")
-                    Label("\(Exercise.sampleExercises.count) exercises", systemImage: "list.bullet")
+                    Label("\(routine.exerciseIDs.count > 0 ? routine.exerciseIDs.count : 5) exercises", systemImage: "list.bullet")
                 }
                 .font(Typography.labelMedium)
                 .foregroundColor(.steadyTextTertiary)
@@ -91,7 +91,7 @@ struct WorkoutSessionView: View {
             
             // Start button
             Button {
-                viewModel.startWorkout(routine: routine)
+                viewModel.startWorkout(routine: routine, modelContext: modelContext)
             } label: {
                 HStack {
                     Image(systemName: "play.fill")

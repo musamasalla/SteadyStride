@@ -64,9 +64,26 @@ class WorkoutViewModel {
     }
     
     // MARK: - Workout Control
-    func startWorkout(routine: Routine) {
+    func startWorkout(routine: Routine, modelContext: ModelContext) {
         self.routine = routine
-        self.exercises = Exercise.sampleExercises // Would load from routine.exerciseIDs
+        
+        // Load exercises for this routine from database
+        if !routine.exerciseIDs.isEmpty {
+            let exerciseIDStrings = routine.exerciseIDs.map { $0.uuidString }
+            let descriptor = FetchDescriptor<Exercise>()
+            let allExercises = (try? modelContext.fetch(descriptor)) ?? []
+            
+            // Filter and order by routine's exerciseIDs
+            self.exercises = routine.exerciseIDs.compactMap { id in
+                allExercises.first { $0.id == id }
+            }
+        }
+        
+        // Fallback to sample exercises if none loaded
+        if exercises.isEmpty {
+            self.exercises = Array(Exercise.sampleExercises.prefix(5))
+        }
+        
         self.currentExerciseIndex = 0
         self.completedExerciseIDs = []
         self.skippedExerciseIDs = []
