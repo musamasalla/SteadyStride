@@ -56,5 +56,18 @@
         <key>UIColorName</key>
         <string>AccentColor</string>
     </dict>
+    
+    <!-- URL Scheme for Deep Linking -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>steadystride</string>
+            </array>
+            <key>CFBundleURLName</key>
+            <string>com.steadystride.app</string>
+        </dict>
+    </array>
 </dict>
 </plist>
